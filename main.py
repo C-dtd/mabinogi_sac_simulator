@@ -106,4 +106,4 @@ def test(npc_name, server_name):
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
 
-app.run(host='localhost', port=5000, debug=True)
+app.run(port=5000, debug=True)
