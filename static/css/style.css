@@ -193,7 +193,7 @@ p {
     height: 60px;
 }
 .search {
-    display: inline-flex;
+    display: none;
     padding-right: 10px;
 }
 .search-input {
