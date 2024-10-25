@@ -140,6 +140,7 @@ async function sac_update() {
             });
             new_sac_container.appendChild(div_channel);
         }
+        sac_container.innerHTML = new_sac_container.innerHTML;
         const sacs = document.querySelectorAll('.sac');
         sacs.forEach(sac => {
             sac.addEventListener('dblclick', () => {
@@ -216,7 +217,6 @@ async function sac_update() {
                 clearTimeout(modal_color_show);
             });
         });
-        sac_container.innerHTML = new_sac_container.innerHTML;
         sac_container.classList.remove('loading');
     });
 }
@@ -254,7 +254,6 @@ function color_search(a, b, c, er = 0) {
                 }
             }
         }
-        console.log(max_error);
         if (max_error <= er) {
             results.push(sac.dataset.colorCode);
             const result_box = document.createElement('div');
