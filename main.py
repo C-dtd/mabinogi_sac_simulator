@@ -92,7 +92,7 @@ def test(npc_name, server_name):
         if i == 11:
             pass
         shop_list_i = shop_list[str(i)]
-        if (not shop_list_i.get('date_shop_next_update') 
+        if (not shop_list_i.get('date_shop_next_update')
             or datetime.datetime.now().astimezone(tz_utc) > datetime.datetime.strptime(shop_list_i.get('date_shop_next_update'), '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=tz_utc) +datetime.timedelta(minutes=10)):
             shop_list_i = get_shop_list(npc_name, server_name, i)
             if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
@@ -107,4 +107,4 @@ def test(npc_name, server_name):
     return sac_data_list
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080)
+    app.run(host='localhost', port=8080, debug=True)

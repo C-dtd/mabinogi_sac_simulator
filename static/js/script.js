@@ -9,20 +9,29 @@ const modal_color_sample = document.querySelectorAll('.color-sample');
 const modal_color_code = document.querySelectorAll('.color-code');
 const thumbnail_img = document.querySelectorAll('.sac-thumbnail');
 const thumbnail_channel = document.querySelectorAll('.thumbnail-channel');
-const search_sample = document.querySelectorAll('.search-sample');
-const search_input = document.querySelectorAll('.search-code');
-const search_button = document.querySelector('.search-button');
 const result_container = document.querySelector('.result-container');
+const color_code_type = document.querySelectorAll("input[name='color-code']");
+
+const search_sample_hex = document.querySelectorAll('.search-sample.hex');
+const search_code_hex = document.querySelectorAll('.search-code.hex');
+const search_error_hex = document.querySelector('.search-error.hex');
+const search_button_hex = document.querySelector('.search-button.hex');
+
+const search_sample_dec = document.querySelectorAll('.search-sample.dec');
+const search_code_dec = document.querySelectorAll('.search-code.dec');
+const search_error_dec = document.querySelector('.search-error.dec');
+const search_button_dec = document.querySelector('.search-button.dec');
 
 const sac_list = [
-                    '튼튼한 달걀 주머니', '튼튼한 감자 주머니', '튼튼한 옥수수 주머니', '튼튼한 밀 주머니', '튼튼한 보리 주머니',
-                    '튼튼한 양털 주머니', '튼튼한 거미줄 주머니', '튼튼한 가는 실뭉치 주머니', '튼튼한 굵은 실뭉치 주머니',
-                    '튼튼한 저가형 가죽 주머니', '튼튼한 일반 가죽 주머니', '튼튼한 고급 가죽 주머니', '튼튼한 최고급 가죽 주머니',
-                    '튼튼한 저가형 옷감 주머니', '튼튼한 일반 옷감 주머니', '튼튼한 고급 옷감 주머니', '튼튼한 최고급 옷감 주머니',
-                    '튼튼한 저가형 실크 주머니', '튼튼한 일반 실크 주머니', '튼튼한 고급 실크 주머니', '튼튼한 최고급 실크 주머니',
-                    '튼튼한 꽃바구니'
-                ];                
+    '튼튼한 달걀 주머니', '튼튼한 감자 주머니', '튼튼한 옥수수 주머니', '튼튼한 밀 주머니', '튼튼한 보리 주머니',
+    '튼튼한 양털 주머니', '튼튼한 거미줄 주머니', '튼튼한 가는 실뭉치 주머니', '튼튼한 굵은 실뭉치 주머니',
+    '튼튼한 저가형 가죽 주머니', '튼튼한 일반 가죽 주머니', '튼튼한 고급 가죽 주머니', '튼튼한 최고급 가죽 주머니',
+    '튼튼한 저가형 옷감 주머니', '튼튼한 일반 옷감 주머니', '튼튼한 고급 옷감 주머니', '튼튼한 최고급 옷감 주머니',
+    '튼튼한 저가형 실크 주머니', '튼튼한 일반 실크 주머니', '튼튼한 고급 실크 주머니', '튼튼한 최고급 실크 주머니',
+    '튼튼한 꽃바구니'
+];
 let is_search = false;
+let color_type = '';
 let modal_color_show = null;
 let next_update_time = new Date();
 
@@ -31,14 +40,37 @@ window.addEventListener('DOMContentLoaded', (e) => {
     if (server == null) {
         server_select.options[1].selected = true;
     } else {
-        for (i=0; i<4; i++) {
+        for (let i=0;i<4;i++) {
             if (server_select.options[i].value == server) {
                 server_select.options[i].selected = true;
                 break;
             }
         }
     }
-    sac_update();
+    const codetype = get_cookie('codetype');
+    if (codetype == null) {
+        color_type = 'hex-code';
+        color_code_type[0].checked = true;
+    } else {
+        color_type = codetype;
+        for (let i=0;i<2;i++) {
+            if (color_code_type[i].getAttribute('id') == codetype) {
+                color_code_type[i].checked = true;
+                break;
+            }
+        }
+    }
+    if (color_type == 'hex-code') {
+        document.querySelector('.search.hex').style.display = 'inline-flex';
+        document.querySelector('.search.dec').style.display = 'none';
+    } else {
+        document.querySelector('.search.dec').style.display = 'inline-flex';
+        document.querySelector('.search.hex').style.display = 'none';
+    }
+    modal_color_code.forEach(code => {
+        code.classList.add(color_type);
+    });
+
     thumbnail_img.forEach(thimg => {
         thimg.dataset.grayScale = thimg.getAttribute('src');
     })
@@ -47,11 +79,48 @@ window.addEventListener('DOMContentLoaded', (e) => {
         set_cookie('server', server_select.value, 604800*1000);
     });
     
+    color_code_type.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const codetype = radio.getAttribute('id');
+            color_type = codetype;
+            set_cookie('codetype', codetype, 604800*1000);
+            modal_color_code.forEach(code => {
+                code.classList.remove('dec-code');
+                code.classList.remove('hex-code');
+                code.classList.add(codetype);
+                if (codetype == 'dec-code' && is_hexcode(code.innerText)) {
+                    code.innerText = dec_color_code(code.innerText);
+                } else if (codetype == 'hex-code' && is_deccode(code.innerText)) {
+                    code.innerText = hex_color_code(code.innerText);
+                }
+            });
+            document.querySelectorAll('.result-code').forEach(code => {
+                code.classList.remove('dec-code');
+                code.classList.remove('hex-code');
+                code.classList.add(codetype);
+                if (codetype == 'dec-code' && is_hexcode(code.innerText)) {
+                    code.innerText = dec_color_code(code.innerText);
+                } else if (codetype == 'hex-code' && is_deccode(code.innerText)) {
+                    code.innerText = hex_color_code(code.innerText);
+                }
+            });
+            if (color_type == 'hex-code') {
+                document.querySelector('.search.hex').style.display = 'inline-flex';
+                document.querySelector('.search.dec').style.display = 'none';
+            } else {
+                document.querySelector('.search.dec').style.display = 'inline-flex';
+                document.querySelector('.search.hex').style.display = 'none';
+            }
+        });
+    });
+
     server_select.addEventListener('change', sac_update);
     location_select.addEventListener('change', sac_update);
     set_drag_scroll_x(table_container);
     set_drag_scroll_y(table_container);
     set_drag_scroll_x(result_container);
+
+    sac_update();
 });
 
 document.addEventListener('mousemove', e => {
@@ -60,29 +129,181 @@ document.addEventListener('mousemove', e => {
     modal_color_box.style.left = x +'px';
     modal_color_box.style.top = y +'px';
 });
-search_button.addEventListener('click', () => {
-    color_search(
-        search_input[0].value,
-        search_input[1].value,
-        search_input[2].value,
-        search_input[3].value
-    );
+
+search_button_hex.addEventListener('click', () => {
+    color_search(search_code_hex[0].value, search_code_hex[1].value, search_code_hex[2].value, search_error_hex.value);
+});
+search_button_dec.addEventListener('click', () => {
+    let code = ['', '' ,''];
+    
+    for (let i=0;i<3;i++) {
+        for (let j=0;j<3;j++) {
+            if (search_code_dec[j +i*3].value == '') {
+                code[i] = '-';
+                break;
+            }
+            dec = Number(search_code_dec[j +i*3].value);
+            code[i] += leftpad(dec2hex(dec), 2, 0);
+        }
+    }
+    color_search(code[0], code[1], code[2], search_error_dec.value);
 });
 
 for (let i=0;i<3;i++) {
-    search_input[i].addEventListener('input', () => {
-        if (is_hexcode(search_input[i].value)) {
-            search_sample[i].setAttribute('style', `background-color: #${search_input[i].value}`);
+    search_code_hex[i].addEventListener('input', () => {
+        if (is_hexcode(search_code_hex[i].value)) {
+            search_sample_hex[i].style.backgroundColor = `#${search_code_hex[i].value}`;
+            search_sample_dec[i].style.backgroundColor = `#${search_code_hex[i].value}`;
+            let code = hex2dec_color(search_code_hex[i].value);
+            for (let j=0;j<3;j++) {
+                search_code_dec[j +i*3].value = code[j];
+            }
         } else {
-            search_sample[i].setAttribute('style', `background-color: #7F7F7F;`);
+            search_sample_hex[i].style.backgroundColor = '#7F7F7F';
+            search_sample_dec[i].style.backgroundColor = '#7F7F7F';
+            for (let j=0;j<3;j++) {
+                search_code_dec[j +i*3].value = '';
+            }
         }
     });
 }
+
+for (let i=0;i<3;i++) {
+    for (let j=0;j<3;j++) {
+        search_code_dec[j +i*3].addEventListener('input', () => {
+            clamp = function() {
+                if (search_code_dec[j +i*3].value == '') {
+                    search_code_dec[j +i*3].value = '';
+                    return;
+                }
+                let err = Number(search_code_dec[j +i*3].value);
+                search_code_dec[j +i*3].value = Math.floor(err);
+                if (isNaN(err)) {
+                    search_code_dec[j +i*3].value = '';
+                    return;
+                } 
+                if (err < 0) {
+                    search_code_dec[j +i*3].value = '0';
+                    return;
+                }
+                if (err > 255) {
+                    search_code_dec[j +i*3].value = '255';
+                    return;
+                }
+            }
+            clamp();
+
+            let code = '';
+            for (let k=0;k<3;k++) {
+                if (search_code_dec[k +i*3].value == '') {
+                    code = '-';
+                    break;
+                }
+                dec = Number(search_code_dec[k +i*3].value);
+                code += leftpad(dec2hex(dec), 2, 0);
+            }
+            if (is_hexcode(code)) {
+                search_sample_dec[i].style.backgroundColor = `#${code}`;
+                search_sample_hex[i].style.backgroundColor = `#${code}`;
+                search_code_hex[i].value = code;
+            } else {
+                search_sample_dec[i].style.backgroundColor = '#7F7F7F';
+                search_sample_hex[i].style.backgroundColor = '#7F7F7F';
+                search_code_hex[i].value = '';
+            }
+        });
+    }
+}
+
+search_error_hex.addEventListener('input', () => {
+    if (search_error_hex.value == '') {
+        search_error_hex.value = '';
+        search_error_dec.value = '';
+        return;
+    }
+    let err = Number(search_error_hex.value);
+    search_error_hex.value = Math.floor(err);
+    if (isNaN(err)) {
+        search_error_hex.value = '';
+        return;
+    } 
+    if (err < 0) {
+        search_error_hex.value = '0';
+        return;
+    }
+    if (err > 255) {
+        search_error_hex.value = '255';
+        return;
+    }
+    search_error_dec.value = search_error_hex.value;
+});
+search_error_hex.addEventListener('focus', () => {
+    if (search_error_hex.value == '0') {
+        search_error_hex.value = '';
+        search_error_dec.value = '';
+    }
+});
+search_error_hex.addEventListener('blur', () => {
+    if (search_error_hex.value == '') {
+        search_error_hex.value = 0;
+        search_error_dec.value = 0;
+    }
+});
+search_error_dec.addEventListener('input', () => {
+    if (search_error_dec.value == '') {
+        search_error_dec.value = '';
+        search_error_hex.value = '';
+        return;
+    }
+    let err = Number(search_error_dec.value);
+    search_error_dec.value = Math.floor(err);
+    if (isNaN(err)) {
+        search_error_dec.value = '';
+        return;
+    } 
+    if (err < 0) {
+        search_error_dec.value = '0';
+        return;
+    }
+    if (err > 255) {
+        search_error_dec.value = '255';
+        return;
+    }
+    search_error_hex.value = search_error_dec.value;
+});
+search_error_dec.addEventListener('focus', () => {
+    if (search_error_dec.value == '0') {
+        search_error_dec.value = '';
+        search_error_hex.value = '';
+    }
+});
+search_error_dec.addEventListener('blur', () => {
+    if (search_error_dec.value == '') {
+        search_error_dec.value = 0;
+        search_error_hex.value = 0;
+    }
+});
 
 async function sac_update() {
     const location = location_select.value;
     const server = server_select.value;
     sac_container.innerHTML = '';
+    table_container.scrollTop = 0;
+    result_container.innerHTML = '';
+    for (let i=0;i<3;i++) {
+        modal_color_sample[i].setAttribute('style', `background-color: #7F7F7F;`);
+        modal_color_code[i].innerText = '';
+    }
+    sac_col.forEach(name => {
+        name.dataset.searched = '';
+    });
+    thumbnail_img.forEach(thimg => {
+        thimg.setAttribute('src', thimg.dataset.grayScale);
+    });
+    thumbnail_channel.forEach(thch => {
+        thch.innerText = '';
+    });
+    is_search = false;
     sac_container.classList.add('loading');
     const response = await fetch(`/${location}/${server}`);
     const res = await response.json();
@@ -168,7 +389,11 @@ async function sac_update() {
                     const color_code = target_code.split(',');
                     for (i=0;i<3;i++) {
                         modal_color_sample[i].setAttribute('style', `background-color: #${color_code[i]};`);
-                        modal_color_code[i].innerText = color_code[i];
+                        if (color_type == 'hex-code') {
+                            modal_color_code[i].innerText = color_code[i];
+                        } else {
+                            modal_color_code[i].innerText = dec_color_code(color_code[i]);
+                        }
                     }
                     sacs.forEach(sac => {
                         if (sac.dataset.colorCode == target_code) {
@@ -199,7 +424,11 @@ async function sac_update() {
                 const color_code = sac.dataset.colorCode.split(',');
                 for (i=0;i<3;i++) {
                     modal_color_sample[i+3].setAttribute('style', `background-color: #${color_code[i]};`);
-                    modal_color_code[i+3].innerText = color_code[i];
+                    if (color_type == 'hex-code') {
+                        modal_color_code[i+3].innerText = color_code[i];
+                    } else {
+                        modal_color_code[i+3].innerText = dec_color_code(color_code[i]);
+                    }
                 }
             });
             sac.addEventListener('mousemove', e => {
@@ -218,6 +447,10 @@ async function sac_update() {
             });
         });
         sac_container.classList.remove('loading');
+
+        // if (is_hexcode()) {
+        //     color_search(error_input.value);
+        // }
     });
 }
 
@@ -226,12 +459,8 @@ function color_search(a, b, c, er = 0) {
     b = is_hexcode(b) ? b : '-';
     c = is_hexcode(c) ? c : '-';
     er = isNaN(Number(er)) ? 0 : Number(er);
-
     result_container.innerHTML = '';
     const sacs = document.querySelectorAll('.sac');
-    sac_col.forEach(name => {
-        name.dataset.searched = '';
-    });
     const color_code = [a, b, c];
     let results = [];
 
@@ -241,7 +470,7 @@ function color_search(a, b, c, er = 0) {
         }
         const sac_data = sac.dataset.colorCode.split(',');
         let max_error = 0;
-        for (i=0;i<3;i++) {
+        for (let i=0;i<3;i++) {
             if (color_code[i] == '-') {
                 continue;
             }
@@ -260,7 +489,7 @@ function color_search(a, b, c, er = 0) {
             result_box.setAttribute('class', 'result-box');
             result_box.dataset.colorCode = sac_data;
             const alpha = ['A', 'B', 'C'];
-            for (i=0;i<3;i++) {
+            for (let i=0;i<3;i++) {
                 const result_bar = document.createElement('div');
                 result_bar.setAttribute('class', 'result-bar');
                 
@@ -271,8 +500,13 @@ function color_search(a, b, c, er = 0) {
                 result_bar.appendChild(result_sample);
 
                 const result_code = document.createElement('span');
-                result_code.setAttribute('class', 'result-code');
-                result_code.innerText = sac_data[i];
+                result_code.classList.add('result-code');
+                result_code.classList.add(color_type);
+                if (color_type == 'hex-code') {
+                    result_code.innerText = sac_data[i];
+                } else {
+                    result_code.innerText = dec_color_code(sac_data[i]);
+                }
                 result_bar.appendChild(result_code);
 
                 result_box.appendChild(result_bar);
@@ -308,7 +542,11 @@ function color_search(a, b, c, er = 0) {
                 const color_code = target_code.split(',');
                 for (i=0;i<3;i++) {
                     modal_color_sample[i].setAttribute('style', `background-color: #${color_code[i]};`);
-                    modal_color_code[i].innerText = color_code[i];
+                    if (color_type == 'hex-code') {
+                        modal_color_code[i].innerText = color_code[i];
+                    } else {
+                        modal_color_code[i].innerText = dec_color_code(color_code[i]);
+                    }
                 }
                 sacs.forEach(sac => {
                     if (sac.dataset.colorCode == target_code) {
@@ -402,14 +640,28 @@ function leftpad(str, len, pad) {
     }
     return str;
 }
-
+function is_deccode(code) {
+    if (code.length != 13) return false;
+    return /[\ \u00a00-9]{2}[0-9]{1}\,[\ \u00a0][\ \u00a00-9]{2}[0-9]{1}\,[\ \u00a0][\ \u00a00-9]{2}[0-9]{1}/i.test(code);
+}
 function is_hexcode(code) {
     if (code.length != 6) return false;
     return /[a-f0-9]{6}$/i.test(code);
 }
-function dec_color_code(code) {
-    let str = '(' +leftpad(String(code[0]), 3, '\u00a0') +', ' +leftpad(String(code[1]), 3, '\u00a0') +', ' +leftpad(String(code[2]), 3, '\u00a0') +')';
+function hex_color_code(dec) {
+    let code = dec.split(',');
+    for (let i=0;i<3;i++) {
+        code[i] = code[i].trim();
+    }
+    return dec2hex_color(code);
+}
+function dec_color_code(hex) {
+    let code = hex2dec_color(hex);
+    let str = leftpad(String(code[0]), 3, '\u00a0') +', ' +leftpad(String(code[1]), 3, '\u00a0') +', ' +leftpad(String(code[2]), 3, '\u00a0');
     return str;
+}
+function dec2hex_color(dec) {
+    return leftpad(dec2hex(dec[0]), 2, 0) +leftpad(dec2hex(dec[1]), 2, 0) +leftpad(dec2hex(dec[2]), 2, 0);
 }
 function hex2dec_color(hex) {
     const r = hex2dec(hex.slice(0, 2));
@@ -418,6 +670,7 @@ function hex2dec_color(hex) {
     return [r, g, b];
 }
 function hex2dec(hex) {
+    hex = hex.toUpperCase();
     let value = 0;
     for (let i = 0; i < hex.length; ++i) {
         let temp = 0;
@@ -445,6 +698,36 @@ function hex2dec(hex) {
                 break;
         }
         value += temp * (16 ** (hex.length - i - 1));
+    }
+    return value;
+}
+function dec2hex(dec) {
+    let value = "";
+    while (dec) {
+        switch (dec % 16) {
+            case 10:
+                value = "A" + value;
+                break;
+            case 11:
+                value = "B" + value;
+                break;
+            case 12:
+                value = "C" + value;
+                break;
+            case 13:
+                value = "D" + value;
+                break;
+            case 14:
+                value = "E" + value;
+                break;
+            case 15:
+                value = "F" + value;
+                break;
+            default:
+                value = (dec % 16) + value;
+                break;
+        }
+        dec = Math.floor(dec/16);
     }
     return value;
 }

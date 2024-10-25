@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kor">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,27 +39,68 @@
             <option value="데위">자르딘</option>
             <option value="모락">칼리다</option>
         </select>
+
+        <input type="radio" name="color-code" id="hex-code">
+        <label for="hex-code">hexCode</label>
+        <input type="radio" name="color-code" id="dec-code">
+        <label for="dec-code">decCode</label>
+
         <div class="search-container">
-            <div class="search">
+            <div class="search hex">
                 <div class="search-box">
                     <div class="search-bar">
-                        <div class="search-sample" style="background-color: #7F7F7F;">A</div>
-                        #<input class="search-code" type="text" maxlength="6">
+                        <div class="search-sample hex" style="background-color: #7F7F7F;">A</div>
+                        #<input class="search-code hex" type="text" maxlength="6">
                     </div>
                     <div class="search-bar">
-                        <div class="search-sample" style="background-color: #7F7F7F;">B</div>
-                        #<input class="search-code" type="text" maxlength="6">
+                        <div class="search-sample hex" style="background-color: #7F7F7F;">B</div>
+                        #<input class="search-code hex" type="text" maxlength="6">
                     </div>
                     <div class="search-bar">
-                        <div class="search-sample" style="background-color: #7F7F7F;">C</div>
-                        #<input class="search-code" type="text" maxlength="6">
+                        <div class="search-sample hex" style="background-color: #7F7F7F;">C</div>
+                        #<input class="search-code hex" type="text" maxlength="6">
                     </div>
                     <div class="search-bar">
                         <div class="search-sample" style="background-color: #FFFFFF;">오차</div>
-                        &nbsp;<input class="search-code" type="number" min="0" max="255" value="0">
+                        &nbsp;<input class="search-error hex" type="number" value="0">
                     </div>
                 </div>
-                <button class="search-button">
+                <button class="search-button hex">
+                    <i class="search-icon"></i>
+                </button>
+            </div>
+            <div class="search dec">
+                <div class="search-box">
+                    <div class="search-bar">
+                        <div class="search-sample dec" style="background-color: #7F7F7F;">A</div>
+                        <div class="input-group">
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number">
+                        </div>
+                    </div>
+                    <div class="search-bar">
+                        <div class="search-sample dec" style="background-color: #7F7F7F;">B</div>
+                        <div class="input-group">
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number">
+                        </div>
+                    </div>
+                    <div class="search-bar">
+                        <div class="search-sample dec" style="background-color: #7F7F7F;">C</div>
+                        <div class="input-group">
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number"><span>,&nbsp;</span>
+                            <input class="search-code dec" type="number">
+                        </div>
+                    </div>
+                    <div class="search-bar">
+                        <div class="search-sample" style="background-color: #FFFFFF;">오차</div>
+                        &nbsp;<input class="search-error dec" type="number" value="0">
+                    </div>
+                </div>
+                <button class="search-button dec">
                     <i class="search-icon"></i>
                 </button>
             </div>
@@ -116,7 +157,6 @@
                         <div>
                             <p>튼튼한 달걀 주머니</p>
                             <p class="thumbnail-channel"></p>
-                            <!-- <p class="thumbnail-channel">1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 채널</p> -->
                         </div>
                     </div>
                     <div class="thumbnail-sac">

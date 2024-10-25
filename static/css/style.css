@@ -19,11 +19,12 @@
 body {
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 header {
-    height: 150px;
+    flex-grow: 0;
 }
-[type="number"] {
+input[type="number"] {
     -moz-appearance: textfield;
 }
 input::-webkit-inner-spin-button {
@@ -33,10 +34,14 @@ input::-webkit-outer-spin-button {
     -webkit-appearance: none;
 margin: 0;
 }
+select {
+    width: 120px;
+}
 .main-container {
     width: 100vw;
+    flex-grow: 1;
     /* width: calc(100vw - 200px); */
-    height: calc(100vh - 150px);
+    /* height: calc(100vh - 150px); */
     /* margin: 0 0 0 200px; */
     position: relative;
 }
@@ -191,6 +196,9 @@ p {
     display: inline-flex;
     padding-right: 10px;
 }
+.search-input {
+    width: 0;
+}
 .search-button {
     width: 40px;
 }
@@ -242,6 +250,9 @@ p {
     position: relative;
     font-family: 'D2Coding';
 }
+.search-bar {
+    width: 180px;
+}
 .color-sample, .search-sample, .result-sample {
     width: 40px;
     height: 20px;
@@ -261,18 +272,57 @@ p {
     font-family: 'D2Coding';
     font-size: 1em;
 }
-.color-code::before, .result-code::before {
+.color-code.hex-code::before, .result-code.hex-code::before {
     content: '#';
     padding-right: 2px;
 }
+.color-code.dec-code::before, .result-code.dec-code::before, .input-group::before {
+    content: '(';
+    padding-right: 2px;
+}
+.color-code.dec-code::after, .result-code.dec-code::after, .input-group::after {
+    content: ')';
+    padding-left: 2px;
+}
 .search-code {
-    width: 72px;
+    border: none;
+    border-bottom: 2px solid gray;
+    outline: none;
+}
+.search-code.hex {
+    padding-left: 2px;
+    padding-right: 0;
+    margin-right: 10px;
+    width: 50px;
+}
+.input-group {
+    display: flex;
+    font-family: 'D2Coding';
+    font-size: 1em;
+    padding-right: 10px;
+}
+.input-group span {
+    font-family: 'D2Coding';
+    font-size: 1em;
+}
+.search-code.dec {
     padding: 0;
+    width: 24px;
+    text-align: right;
+}
+.search-error {
+    width: 24px;
+    font-family: 'D2Coding';
+    font-size: 1em;
+    margin-right: 10px;
+    border: none;
+    border-bottom: 2px solid gray;
+    outline: none;
 }
 .search-container {
     display: flex;
     align-items: center;
-    padding-top: 10px;
+    padding: 10px;
 }
 .result-container {
     display: flex;
