@@ -448,9 +448,9 @@ async function sac_update() {
         });
         sac_container.classList.remove('loading');
 
-        // if (is_hexcode()) {
-        //     color_search(error_input.value);
-        // }
+        if (is_hexcode(search_code_hex[0].value) || is_hexcode(search_code_hex[1].value) || is_hexcode(search_code_hex[2].value)) {
+            color_search(search_code_hex[0].value, search_code_hex[1].value, search_code_hex[2].value, search_error_hex.value);
+        }
     });
 }
 
