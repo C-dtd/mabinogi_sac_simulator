@@ -323,6 +323,7 @@ p {
     display: flex;
     align-items: center;
     padding: 10px;
+    height: 80px;
 }
 .result-container {
     display: flex;
