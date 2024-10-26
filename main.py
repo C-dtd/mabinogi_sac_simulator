@@ -140,6 +140,14 @@ def test(npc_name, server_name):
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
 
+@app.get('/forcereload')
+def forcereload():
+    inittime = datetime.datetime.now()
+    json_updater()
+    termtime = datetime.datetime.now()
+    return (inittime -termtime).seconds
+    
+
 if __name__ == '__main__':
     # app.run(host='localhost', port=8080, debug=True)
     app.run(host='localhost', port=8080)
