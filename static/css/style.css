@@ -22,7 +22,7 @@ body {
     height: 100vh;
 }
 header {
-    flex-grow: 0;
+    height: 160px;
 }
 input[type="number"] {
     -moz-appearance: textfield;
@@ -39,10 +39,7 @@ select {
 }
 .main-container {
     width: 100vw;
-    flex-grow: 1;
-    /* width: calc(100vw - 200px); */
-    /* height: calc(100vh - 150px); */
-    /* margin: 0 0 0 200px; */
+    height: calc(100vh - 160px);
     position: relative;
 }
 .thumbnail-container {

@@ -2,3 +2,4 @@ shop_data.json
 .env
 test.ipynb
 test.py
+forcereloader.py

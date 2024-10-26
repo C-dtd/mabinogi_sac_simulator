@@ -140,13 +140,16 @@ def test(npc_name, server_name):
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
 
-@app.get('/forcereload')
+@app.get('/date_shop_next_update')
 def forcereload():
-    inittime = datetime.datetime.now()
-    json_updater()
-    termtime = datetime.datetime.now()
-    return (inittime -termtime).seconds
-    
+    for npc in npc_list:
+        for server in server_list:
+            for ch in range(1, channel_list[server] +1):
+                shop_list = shop_data[npc][server][str(ch)]
+                if ch == 11:
+                    continue
+                print(shop_list['date_shop_next_update'])
+    return 'date_shop_next_update'
 
 if __name__ == '__main__':
     # app.run(host='localhost', port=8080, debug=True)
