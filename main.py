@@ -136,7 +136,7 @@ def test(npc_name, server_name):
                 shop_data[npc_name][server_name]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
                 with open(shopfilepath, 'w', encoding='UTF8') as f:
                     json.dump(shop_data, f, ensure_ascii=False, indent='\t')
-    sac_data_list = {str(i+1): get_sac_colorcode(shop_list[str(i+1)]) if i != 10 else str(i+1): {} for i in range(channel_list[server_name])}
+    sac_data_list = {str(i+1): get_sac_colorcode(shop_list[str(i+1)]) if i != 10 else {} for i in range(channel_list[server_name])}
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
 
