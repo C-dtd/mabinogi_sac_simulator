@@ -123,7 +123,7 @@ def test(npc_name, server_name):
     shop_list = shop_data[npc_name][server_name]
     for i in range(1, channel_list[server_name] +1):
         if i == 11:
-            pass
+            continue
         shop_list_i = shop_list[str(i)]
         if (not shop_list_i.get('date_shop_next_update')
             or datetime.datetime.now().astimezone(tz_utc) > datetime.datetime.strptime(shop_list_i.get('date_shop_next_update'), '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=tz_utc) +datetime.timedelta(minutes=10)):
