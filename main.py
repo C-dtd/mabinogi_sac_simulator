@@ -53,46 +53,46 @@ def color_decode(c, p):
     b = color_map[p]['b'].index(c[2])
     return (hex(r)[2:].zfill(2) +hex(g)[2:].zfill(2) +hex(b)[2:].zfill(2)).upper()
 
-def sec_routine():
-    now = datetime.datetime.now()
-    if now.second == 0:
-        scheduler.remove_job('sec_routine')
-        if (now.hour*60 +now.minute)%36 == 10:
-            scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
-        else:
-            print(f'{now}: minute check start!')
-            scheduler.add_job(func=min_routine, trigger='interval', minutes=1, id='min_routine')
+# def sec_routine():
+#     now = datetime.datetime.now()
+#     if now.second == 0:
+#         scheduler.remove_job('sec_routine')
+#         if (now.hour*60 +now.minute)%36 == 10:
+#             scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
+#         else:
+#             print(f'{now}: minute check start!')
+#             scheduler.add_job(func=min_routine, trigger='interval', minutes=1, id='min_routine')
 
-def min_routine():
-    now = datetime.datetime.now()
-    if (now.hour*60 +now.minute)%36 == 10:
-        scheduler.remove_job('min_routine')
-        print(f'{now}: json updater start!')
-        json_updater()
-        scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
+# def min_routine():
+#     now = datetime.datetime.now()
+#     if (now.hour*60 +now.minute)%36 == 10:
+#         scheduler.remove_job('min_routine')
+#         print(f'{now}: json updater start!')
+#         json_updater()
+#         scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
 
-def json_updater():
-    print('json update start at', datetime.datetime.now())
-    for npc in npc_list:
-        for server in server_list:
-            shop_list = shop_data[npc][server]
-            for ch in range(1, channel_list[server] +1):
-                if ch == 11:
-                    continue
-                shop_list_i = get_shop_list(npc, server, ch)
-                if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
-                    shop_list[str(ch)] = shop_list_i['shop'][sac_data(shop_list_i)]
-                    shop_list[str(ch)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
-                    shop_data[npc][server][str(ch)] = shop_list[str(ch)]
-                    shop_data[npc][server]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
-    with open(shopfilepath, 'w', encoding='UTF8') as f:
-        json.dump(shop_data, f, ensure_ascii=False, indent='\t')
-    print('json update end at', datetime.datetime.now())
+# def json_updater():
+#     print('json update start at', datetime.datetime.now())
+#     for npc in npc_list:
+#         for server in server_list:
+#             shop_list = shop_data[npc][server]
+#             for ch in range(1, channel_list[server] +1):
+#                 if ch == 11:
+#                     continue
+#                 shop_list_i = get_shop_list(npc, server, ch)
+#                 if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
+#                     shop_list[str(ch)] = shop_list_i['shop'][sac_data(shop_list_i)]
+#                     shop_list[str(ch)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
+#                     shop_data[npc][server][str(ch)] = shop_list[str(ch)]
+#                     shop_data[npc][server]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
+#     with open(shopfilepath, 'w', encoding='UTF8') as f:
+#         json.dump(shop_data, f, ensure_ascii=False, indent='\t')
+#     print('json update end at', datetime.datetime.now())
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
-print(f'{datetime.datetime.now()}: second check start!')
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
+# print(f'{datetime.datetime.now()}: second check start!')
+# scheduler.start()
 
 load_dotenv()
 headers = {
@@ -134,8 +134,8 @@ def test(npc_name, server_name):
                 shop_list[str(i)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
                 shop_data[npc_name][server_name][str(i)] = shop_list[str(i)]
                 shop_data[npc_name][server_name]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
-                with open(shopfilepath, 'w', encoding='UTF8') as f:
-                    json.dump(shop_data, f, ensure_ascii=False, indent='\t')
+    with open(shopfilepath, 'w', encoding='UTF8') as f:
+        json.dump(shop_data, f, ensure_ascii=False, indent='\t')
     sac_data_list = {str(i+1): get_sac_colorcode(shop_list[str(i+1)]) if i != 10 else {} for i in range(channel_list[server_name])}
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
