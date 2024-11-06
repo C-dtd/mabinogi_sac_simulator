@@ -162,5 +162,5 @@ def test(npc_name, server_name):
 #     return 'date_shop_next_update'
 
 if __name__ == '__main__':
-    # app.run(host='localhost', port=8080, debug=True)
-    app.run(host='localhost', port=8080)
+    app.run(host='localhost', port=8080, debug=True)
+    # app.run(host='localhost', port=8080)

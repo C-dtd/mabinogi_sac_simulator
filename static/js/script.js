@@ -528,6 +528,7 @@ async function sac_update() {
 async function sac_draw(sac) {
     const canv = sac.querySelector('.sac-img');
     const color = sac.dataset.colorCode.split(',');
+    // const color = ['7F7F7F', '7F7F7F', '7F7F7F'];
     let imgs, base;
     switch (sac.dataset.sacName) {
         case '튼튼한 달걀 주머니':
