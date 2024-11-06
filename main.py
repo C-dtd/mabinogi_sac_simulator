@@ -66,8 +66,8 @@ def sec_routine():
 
 def min_routine():
     now = datetime.datetime.now()
-    # if (now.hour*60 +now.minute)%36 == 10:
-    if True:
+    if (now.hour*60 +now.minute)%36 == 10:
+    # if True:
         scheduler.remove_job('min_routine')
         print(f'{now}: json updater start!')
         asyncio.run(json_updater())
