@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    </style>
+</head> 
+<body>
+    <img id="base" src="/static/dec/Thin_base.png">
+    <img id="base-black" src="/static/dec/Thin_L.png">
+    <img id="mask1" src="/static/dec/Thin1.png">
+    <img id="mask2" src="/static/dec/Thin2.png">
+    <img id="mask3" src="/static/dec/Thin3.png">
+    <img id="i-mask" src="/static/dec/Cheap_fabric.png">
+    <img id="i-l" src="/static/dec/Cheap_fabric_L.png">
+    <img id="i-s" src="/static/dec/Cheap_fabric_S.png">
+    <canvas id="canv" width="240" height="240"></canvas>
+</body>
+
+<script>
+    const canv = document.querySelector('#canv');
+    const base = document.querySelector('#base');
+    const mask1 = document.querySelector('#mask1');
+    const mask2 = document.querySelector('#mask2');
+    const mask3 = document.querySelector('#mask3');
+    const L = document.querySelector('#base-black');
+    const imask = document.querySelector('#i-mask');
+    const il = document.querySelector('#i-l');
+    const is = document.querySelector('#i-s');
+    
+    async function draw(canv, base, L, mask1, color1, mask2, color2, mask3, color3) {
+        const ctx = canv.getContext('2d');
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        ctx.drawImage(base, 0, 0, 240, 240);
+        const baseData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        ctx.drawImage(mask1, 0, 0, 240, 240);
+        const maskData1 = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        const c1 = hex2dec_color(color1);
+        if (mask2 !== undefined) {
+            ctx.drawImage(mask2, 0, 0, 240, 240);
+        }
+        const c2 = mask2 !== undefined ? hex2dec_color(color2) : 'FFFFFF';
+        const maskData2 = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        if (mask3 !== undefined) {
+            ctx.drawImage(mask3, 0, 0, 240, 240);
+        }
+        const c3 = mask3 !== undefined ? hex2dec_color(color3) : 'FFFFFF';
+        const maskData3 = ctx.getImageData(0, 0, 240, 240);
+        if (L !== undefined) {
+            ctx.drawImage(L, 0, 0, 240, 240);
+        }
+        const lData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+
+        for (let i = 0; i < baseData.data.length; i += 4) {
+            if (mask1 !== undefined) {
+                const brightness = maskData1.data[i];
+                if (brightness !== 0) {
+                    baseData.data[i] = Math.max(0, baseData.data[i] + c1[0] - 255);
+                    baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c1[1] - 255);
+                    baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c1[2] - 255);
+                }
+            }
+            if (mask2 !== undefined) {
+                const brightness = maskData2.data[i];
+                if (brightness !== 0) {
+                    baseData.data[i] = Math.max(0, baseData.data[i] + c2[0] - 255);
+                    baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c2[1] - 255);
+                    baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c2[2] - 255);
+                }
+            }
+            if (mask3 !== undefined) {
+                const brightness = maskData3.data[i];
+                if (brightness !== 0) {
+                    baseData.data[i] = Math.max(0, baseData.data[i] + c3[0] - 255);
+                    baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c3[1] - 255);
+                    baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c3[2] - 255);
+                }
+            }
+            if (L !== undefined) {
+                baseData.data[i] = Math.min(baseData.data[i] + lData.data[i], 255);
+                baseData.data[i + 1] = Math.min(baseData.data[i + 1] + lData.data[i + 1], 255);
+                baseData.data[i + 2] = Math.min(baseData.data[i + 2] + lData.data[i + 2], 255);
+            }
+        }
+        ctx.putImageData(baseData, 0, 0);
+    }
+    async function draw_add(canv, mask, l, s, color) {
+        const ctx = canv.getContext('2d');
+        const baseData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        ctx.drawImage(mask, 0, 0, 240, 240);
+        const maskData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        ctx.drawImage(l, 0, 0, 240, 240);
+        const lData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        ctx.drawImage(s, 0, 0, 240, 240);
+        const sData = ctx.getImageData(0, 0, 240, 240);
+        ctx.clearRect(0, 0, canv.width, canv.height);
+        const c = hex2dec_color(color);
+
+        for (let i=0; i<baseData.data.length;i+=4) {
+            const brightness = maskData.data[i];
+            if (brightness !== 0) {
+                baseData.data[i] = Math.max(0, Math.min(c[0] + lData.data[i], 255) - sData.data[i]);
+                baseData.data[i+1] = Math.max(0, Math.min(c[1] + lData.data[i+1], 255) - sData.data[i+1]);
+                baseData.data[i+2] = Math.max(0, Math.min(c[2] + lData.data[i+2], 255) - sData.data[i+2]);
+            }
+        }
+
+        ctx.putImageData(baseData, 0, 0);
+    }
+    function hex2dec_color(hex) {
+        const r = hex2dec(hex.slice(0, 2));
+        const g = hex2dec(hex.slice(2, 4));
+        const b = hex2dec(hex.slice(4, 6));
+        return [r, g, b];
+    }
+    function hex2dec(hex) {
+        hex = hex.toUpperCase();
+        let value = 0;
+        for (let i = 0; i < hex.length; ++i) {
+            let temp = 0;
+            switch (hex[i]) {
+                case "A":
+                    temp = 10;
+                    break;
+                case "B":
+                    temp = 11;
+                    break;
+                case "C":
+                    temp = 12;
+                    break;
+                case "D":
+                    temp = 13;
+                    break;
+                case "E":
+                    temp = 14;
+                    break;
+                case "F":
+                    temp = 15;
+                    break;
+                default:
+                    temp = +hex[i];
+                    break;
+            }
+            value += temp * (16 ** (hex.length - i - 1));
+        }
+        return value;
+    }
+</script>
+</body>
+</html>

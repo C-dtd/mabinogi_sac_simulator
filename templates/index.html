@@ -20,6 +20,7 @@
             <option value="만돌린">만돌린</option>
             <option value="하프">하프</option>
         </select>
+        <button id="prev-location"><</button>
         <select name="location" id="location">
             <option value="상인 네루" selected>티르 코네일</option>
             <option value="상인 누누">던바튼</option>
@@ -36,10 +37,10 @@
             <option value="상인 세누">스카하</option>
             <option value="귀넥">카루 숲</option>
             <option value="얼리">오아시스</option>
-            <option value="데위">자르딘</option>
             <option value="모락">칼리다</option>
+            <option value="데위">자르딘</option>
         </select>
-
+        <button id="next-location">></button>
         <input type="radio" name="color-code" id="hex-code">
         <label for="hex-code">hexCode</label>
         <input type="radio" name="color-code" id="dec-code">
@@ -133,7 +134,7 @@
                 <div class="sac-name" data-searched="">최고급 실크</div>
                 <div class="sac-name" data-searched="">꽃바구니</div>
             </div>
-            <div class="sac-container"></div>
+            <div class="sac-container loading"></div>
         </div>
         <div class="thumbnail-container">
             <div class="color-box">
@@ -153,77 +154,77 @@
             <div class="thumbnail-col">
                 <div class="thumbnail-row">
                     <div class="thumbnail-sac">
-                        <img src="/static/img/egg.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Egg_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 달걀 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/potato.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Potato_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 감자 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/corn.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Corn_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 옥수수 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/wheat.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Wheat_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 밀 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/barley.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Barley_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 보리 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/wool.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Wool_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 양털 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/cobweb.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Cobweb_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 거미줄 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/fine yarn.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Thin_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 가는 실뭉치 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/thick yarn.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Thick_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 굵은 실뭉치 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/cheap leather.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Leather_1_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 저가형 가죽 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/common leather.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Leather_2_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 일반 가죽 주머니</p>
                             <p class="thumbnail-channel"></p>
@@ -232,77 +233,77 @@
                 </div>
                 <div class="thumbnail-row">
                     <div class="thumbnail-sac">
-                        <img src="/static/img/high grade leather.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Leather_3_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 고급 가죽 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/the highest grade leather.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Leather_4_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 최고급 가죽 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/cheap cloth.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Cloth_1_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 저가형 옷감 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/common cloth.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Cloth_2_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 일반 옷감 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/high grade cloth.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Cloth_3_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 고급 옷감 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/the highest grade cloth.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Cloth_4_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 최고급 옷감 주머니</p>
                             <span class="thumbnail-channel"></span>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/cheap silk.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Silk_1_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 저가형 실크 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/common silk.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Silk_2_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 일반 실크 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/high grade silk.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Silk_3_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 고급 실크 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/the highest grade silk.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Silk_4_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 최고급 실크 주머니</p>
                             <p class="thumbnail-channel"></p>
                         </div>
                     </div>
                     <div class="thumbnail-sac">
-                        <img src="/static/img/flower.png" alt="" class="sac-thumbnail">
+                        <canvas class="sac-thumbnail" width="48" height="48" style="background-image: url('/static/layer/Flower_gray.png');"></canvas>
                         <div>
                             <p>튼튼한 꽃바구니</p>
                             <p class="thumbnail-channel"></p>
@@ -313,17 +314,17 @@
         </div>
     </div>
     <div class="color-box thumbnail">
-        <div class="color-bar">
-            <div class="color-sample">A</div>
-            <span class="color-code"></span>
+        <div class="color-bar thumbnail">
+            <div class="color-sample thumbnail">A</div>
+            <span class="color-code thumbnail"></span>
         </div>
-        <div class="color-bar">
-            <div class="color-sample">B</div>
-            <span class="color-code"></span>
+        <div class="color-bar thumbnail">
+            <div class="color-sample thumbnail">B</div>
+            <span class="color-code thumbnail"></span>
         </div>
-        <div class="color-bar">
-            <div class="color-sample">C</div>
-            <span class="color-code"></span>
+        <div class="color-bar thumbnail">
+            <div class="color-sample thumbnail">C</div>
+            <span class="color-code thumbnail"></span>
         </div>
     </div>
     <script src="/static/js/script.js"></script>

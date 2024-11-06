@@ -4,6 +4,7 @@ import requests
 import re
 import json
 import datetime
+import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 
@@ -53,46 +54,51 @@ def color_decode(c, p):
     b = color_map[p]['b'].index(c[2])
     return (hex(r)[2:].zfill(2) +hex(g)[2:].zfill(2) +hex(b)[2:].zfill(2)).upper()
 
-# def sec_routine():
-#     now = datetime.datetime.now()
-#     if now.second == 0:
-#         scheduler.remove_job('sec_routine')
-#         if (now.hour*60 +now.minute)%36 == 10:
-#             scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
-#         else:
-#             print(f'{now}: minute check start!')
-#             scheduler.add_job(func=min_routine, trigger='interval', minutes=1, id='min_routine')
+def sec_routine():
+    now = datetime.datetime.now()
+    if now.second == 0:
+        scheduler.remove_job('sec_routine')
+        if (now.hour*60 +now.minute)%36 == 10:
+            scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
+        else:
+            print(f'{now}: minute check start!')
+            scheduler.add_job(func=min_routine, trigger='interval', minutes=1, id='min_routine')
 
-# def min_routine():
-#     now = datetime.datetime.now()
-#     if (now.hour*60 +now.minute)%36 == 10:
-#         scheduler.remove_job('min_routine')
-#         print(f'{now}: json updater start!')
-#         json_updater()
-#         scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
+def min_routine():
+    now = datetime.datetime.now()
+    # if (now.hour*60 +now.minute)%36 == 10:
+    if True:
+        scheduler.remove_job('min_routine')
+        print(f'{now}: json updater start!')
+        asyncio.run(json_updater())
+        scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
 
-# def json_updater():
-#     print('json update start at', datetime.datetime.now())
-#     for npc in npc_list:
-#         for server in server_list:
-#             shop_list = shop_data[npc][server]
-#             for ch in range(1, channel_list[server] +1):
-#                 if ch == 11:
-#                     continue
-#                 shop_list_i = get_shop_list(npc, server, ch)
-#                 if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
-#                     shop_list[str(ch)] = shop_list_i['shop'][sac_data(shop_list_i)]
-#                     shop_list[str(ch)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
-#                     shop_data[npc][server][str(ch)] = shop_list[str(ch)]
-#                     shop_data[npc][server]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
-#     with open(shopfilepath, 'w', encoding='UTF8') as f:
-#         json.dump(shop_data, f, ensure_ascii=False, indent='\t')
-#     print('json update end at', datetime.datetime.now())
+async def json_updater():
+    print('json update start at', datetime.datetime.now())
+    tasks = []
+    for npc in npc_list:
+        for server in server_list:
+            for ch in range(1, channel_list[server] +1):
+                if ch == 11:
+                    continue
+                tasks.append(json_update(npc, server, ch))
+    await asyncio.gather(*tasks)
+    with open(shopfilepath, 'w', encoding='UTF8') as f:
+        json.dump(shop_data, f, ensure_ascii=False, indent='\t')
+    print('json update end at', datetime.datetime.now())
 
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
-# print(f'{datetime.datetime.now()}: second check start!')
-# scheduler.start()
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
+print(f'{datetime.datetime.now()}: second check start!')
+scheduler.start()
+
+
+async def json_update(npc, server, ch):
+    shop_list_i = get_shop_list(npc, server, ch)
+    if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
+        shop_data[npc][server][str(ch)] = shop_list_i['shop'][sac_data(shop_list_i)]
+        shop_data[npc][server][str(ch)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
+        shop_data[npc][server]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
 
 load_dotenv()
 headers = {
@@ -105,12 +111,17 @@ channel_list = {'류트': 42, '만돌린': 15, '하프': 24, '울프': 15}
 
 with open(shopfilepath, 'r', encoding='UTF8') as f:
     shop_data = json.load(f)
-# json_updater()
 
 with open(colorfilepath, 'r') as f:
     color_map = json.load(f)
 
 app = Flask(__name__)
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    response = make_response(send_from_directory('static', filename))
+    response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1년 동안 캐싱
+    return response
 
 @app.get('/')
 def index():
@@ -127,7 +138,6 @@ def test(npc_name, server_name):
         shop_list_i = shop_list[str(i)]
         if (not shop_list_i.get('date_shop_next_update')
             or datetime.datetime.now().astimezone(tz_utc) > datetime.datetime.strptime(shop_list_i.get('date_shop_next_update'), '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=tz_utc) +datetime.timedelta(minutes=10)):
-            print('reload', server_name, npc_name, i, datetime.datetime.strptime(shop_list_i.get('date_shop_next_update'), '%Y-%m-%dT%H:%M:%S.%fZ'))
             shop_list_i = get_shop_list(npc_name, server_name, i)
             if not shop_list_i.get('error') and shop_list_i.get('shop') and sac_data(shop_list_i) != -1:
                 shop_list[str(i)] = shop_list_i['shop'][sac_data(shop_list_i)]
@@ -140,16 +150,16 @@ def test(npc_name, server_name):
     sac_data_list['date_shop_next_update'] = shop_list['date_shop_next_update']
     return sac_data_list
 
-@app.get('/date_shop_next_update')
-def forcereload():
-    for npc in npc_list:
-        for server in server_list:
-            for ch in range(1, channel_list[server] +1):
-                shop_list = shop_data[npc][server][str(ch)]
-                if ch == 11:
-                    continue
-                print(shop_list['date_shop_next_update'])
-    return 'date_shop_next_update'
+# @app.get('/date_shop_next_update')
+# def forcereload():
+#     for npc in npc_list:
+#         for server in server_list:
+#             for ch in range(1, channel_list[server] +1):
+#                 shop_list = shop_data[npc][server][str(ch)]
+#                 if ch == 11:
+#                     continue
+#                 print(shop_list['date_shop_next_update'])
+#     return 'date_shop_next_update'
 
 if __name__ == '__main__':
     # app.run(host='localhost', port=8080, debug=True)

@@ -37,6 +37,10 @@ margin: 0;
 select {
     width: 120px;
 }
+#prev-location, #next-location {
+    width: 20px;
+    height: 20px;
+}
 .main-container {
     width: 100vw;
     height: calc(100vh - 160px);
@@ -56,8 +60,6 @@ select {
     display: flex;
     width: 100%;
     padding-right: 10px;
-    /* border-left: 1px solid black;
-    border-top: 1px solid black; */
     overflow-y: auto;
 }
 .thumbnail-row {
@@ -70,8 +72,6 @@ select {
     display: flex;
     width: 100%;
     height: 60px;
-    /* border-right: 1px solid black;
-    border-bottom: 1px solid black; */
 }
 .thumbnail-sac div {
     width: calc(100% - 60px);
@@ -88,10 +88,11 @@ p {
     visibility: hidden;
     z-index: 3;
     outline: 5px solid beige;
+    height: 60px;
 }
 .sac-thumbnail {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     margin: auto 0;
 }
 .table-container {
@@ -145,11 +146,19 @@ p {
     box-sizing: border-box;
     display: flex;
     width: 120px;
-    height: 70px;
+    height: 72px;
     justify-content: space-between;
     align-items: center;
     padding: 5px 10px;
     background-color: white;
+}
+.sac-name:first-child {
+    padding-top: 12px;
+    height: 84px;
+}
+.sac-name:last-child {
+    padding-bottom: 12px;
+    height: 84px;
 }
 .sac-name::before {
     content: attr(data-searched);
@@ -169,25 +178,28 @@ p {
 .sac {
     display: inline-flex;
     flex-direction: row;
-    padding: 5px;
-    cursor: pointer;
+    padding-left: 24px;
+    padding-top: 24px;
+    background: url('/static/img/inv_off.png') repeat left top;
 }
-.channel-container .sac:nth-child(2n+1) {
-    background-color: beige;
+.channel-container:last-child>* {
+    padding-right: 24px;
 }
-.channel-container .sac:nth-child(2n):hover {
-    .sac-img, .color-code {
-        background-color: beige;
-    }
+.sac:last-child {
+    padding-bottom: 24px;
 }
-.channel-container .sac:nth-child(2n+1):hover {
-    .sac-img, .color-code {
-        background-color: white;
-    }
+.hover-container {
+    display: inline-flex;
+    flex-direction: row;
 }
 .sac-img {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    background: url('/static/img/inv_on.png') repeat left top;
+}
+.hover-container:hover .sac-img {
+    background: url('/static/img/inv_hover.png') repeat left top;
 }
 .search {
     display: none;
@@ -223,10 +235,11 @@ p {
     transform: rotate(-45deg)
 }
 .color-box, .search-box, .result-box {
-    height: 60px;
+    height: 48px;
     display: inline-flex;
     flex-direction: column;
     flex-wrap: wrap;
+    cursor: pointer;
 }
 .search-box {
     height: 80px;
@@ -240,34 +253,44 @@ p {
     background-color: beige;
 }
 .color-bar, .search-bar, .result-bar {
-    height: 20px;
+    height: 16px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     position: relative;
     font-family: 'D2Coding';
 }
+.thumbnail.color-bar {
+    height: 20px;
+}
 .search-bar {
     width: 180px;
 }
 .color-sample, .search-sample, .result-sample {
-    width: 40px;
-    height: 20px;
+    width: 48px;
+    height: 16px;
     display: inline-flex;
-    outline: 1px solid white;
+    border: 1px solid white;
+    box-sizing: border-box;
     justify-content: center;
     align-items: center;
     color: white;
     text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;
     user-select: none;
 }
+.thumbnail.color-sample {
+    height: 20px;
+}
 .color-code, .search-code, .result-code {
     box-sizing: border-box;
-    height: 20px;
+    height: 16px;
     padding-right: 10px;
     white-space: nowrap;
     font-family: 'D2Coding';
     font-size: 1em;
+}
+.thumbnail.color-code {
+    height: 20px;
 }
 .color-code.hex-code::before, .result-code.hex-code::before {
     content: '#';
@@ -308,6 +331,8 @@ p {
     text-align: right;
 }
 .search-error {
+    box-sizing: border-box;
+    height: 16px;
     width: 24px;
     font-family: 'D2Coding';
     font-size: 1em;
@@ -349,4 +374,7 @@ p {
     to {
         transform: rotate(360deg);
     }
+}
+.img-data {
+    display: none;
 }

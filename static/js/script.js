@@ -22,6 +22,9 @@ const search_code_dec = document.querySelectorAll('.search-code.dec');
 const search_error_dec = document.querySelector('.search-error.dec');
 const search_button_dec = document.querySelector('.search-button.dec');
 
+const prev_location = document.querySelector('#prev-location');
+const next_location = document.querySelector('#next-location');
+
 const sac_list = [
     '튼튼한 달걀 주머니', '튼튼한 감자 주머니', '튼튼한 옥수수 주머니', '튼튼한 밀 주머니', '튼튼한 보리 주머니',
     '튼튼한 양털 주머니', '튼튼한 거미줄 주머니', '튼튼한 가는 실뭉치 주머니', '튼튼한 굵은 실뭉치 주머니',
@@ -30,12 +33,15 @@ const sac_list = [
     '튼튼한 저가형 실크 주머니', '튼튼한 일반 실크 주머니', '튼튼한 고급 실크 주머니', '튼튼한 최고급 실크 주머니',
     '튼튼한 꽃바구니'
 ];
+const imageCache = {};
+const canvasCache = {};
+
 let is_search = false;
 let color_type = '';
 let modal_color_show = null;
 let next_update_time = new Date();
 
-window.addEventListener('DOMContentLoaded', (e) => {
+window.addEventListener('DOMContentLoaded', async () => {
     const server = get_cookie('server');
     if (server == null) {
         server_select.options[1].selected = true;
@@ -72,7 +78,7 @@ window.addEventListener('DOMContentLoaded', (e) => {
     });
 
     thumbnail_img.forEach(thimg => {
-        thimg.dataset.grayScale = thimg.getAttribute('src');
+        thimg.dataset.grayScale = true;
     })
 
     server_select.addEventListener('change', () => {
@@ -120,6 +126,34 @@ window.addEventListener('DOMContentLoaded', (e) => {
     set_drag_scroll_y(table_container);
     set_drag_scroll_x(result_container);
 
+    await loadImages([
+        'Barley_base', 'Barley_L', 'Barley1',
+        'Cloth_1', 'Cloth_1i', 'Cloth_1o',
+        'Cloth_2', 'Cloth_2i', 'Cloth_2o',
+        'Cloth_3', 'Cloth_3i', 'Cloth_3o',
+        'Cloth_4', 'Cloth_4i', 'Cloth_4o',
+        'Cloth_base', 'Cloth_L', 'Cloth1', 'Cloth2',
+        'Cobweb_base', 'Cobweb_L', 'Cobweb1', 'Cobweb2', 'Cobweb3',
+        'Corn_base', 'Corn_L', 'Corn1',
+        'Egg_base', 'Egg_L', 'Egg1',
+        'Flower_base', 'Flower_L', 'Flower1', 'Flower2', 'Flower3',
+        'Leather_1', 'Leather_1i', 'Leather_1o',
+        'Leather_2', 'Leather_2i', 'Leather_2o',
+        'Leather_3', 'Leather_3i', 'Leather_3o',
+        'Leather_4', 'Leather_4i', 'Leather_4o',
+        'Leather_base', 'Leather_L', 'Leather1', 'Leather2',
+        'Plus',
+        'Potato_base', 'Potato_L', 'Potato1',
+        'Silk_1', 'Silk_1i', 'Silk_1o',
+        'Silk_2', 'Silk_2i', 'Silk_2o',
+        'Silk_3', 'Silk_3i', 'Silk_3o',
+        'Silk_4', 'Silk_4i', 'Silk_4o',
+        'Silk_base', 'Silk_L', 'Silk1', 'Silk2',
+        'Thick_base', 'Thick_L', 'Thick1', 'Thick2', 'Thick3',
+        'Thin_base', 'Thin_L', 'Thin1', 'Thin2', 'Thin3',
+        'Wheat_base', 'Wheat_L', 'Wheat1',
+        'Wool_base', 'Wool_L', 'Wool1', 'Wool2'
+    ]);
     sac_update();
 });
 
@@ -284,6 +318,19 @@ search_error_dec.addEventListener('blur', () => {
     }
 });
 
+prev_location.addEventListener('click', () => {
+    if (location_select.selectedIndex === 0) {
+        location_select.selectedIndex = location_select.options.length-1;
+    } else {
+        location_select.selectedIndex = (location_select.selectedIndex -1) %location_select.options.length;
+    }
+    sac_update();
+});
+next_location.addEventListener('click', () => {
+    location_select.selectedIndex = (location_select.selectedIndex +1) %location_select.options.length;
+    sac_update();
+});
+
 async function sac_update() {
     const location = location_select.value;
     const server = server_select.value;
@@ -298,7 +345,8 @@ async function sac_update() {
         name.dataset.searched = '';
     });
     thumbnail_img.forEach(thimg => {
-        thimg.setAttribute('src', thimg.dataset.grayScale);
+        thimg.dataset.grayScale = true;
+        thimg.getContext('2d').clearRect(0, 0, 48, 48);
     });
     thumbnail_channel.forEach(thch => {
         thch.innerText = '';
@@ -311,7 +359,7 @@ async function sac_update() {
     const new_sac_container = document.createElement('div');
     new_sac_container.setAttribute('class', 'sac-container');
     
-    channels.forEach(ch => {
+    channels.forEach(async ch => {
         if (ch == 'date_shop_next_update') {
             const date = new Date(res[ch]);
             const time = `${leftpad(date.getMonth()+1, 2, '0')}.${leftpad(date.getDate(), 2, '0')} ${leftpad(date.getHours(), 2, '0')}:${leftpad(date.getMinutes(), 2, '0')}`
@@ -325,19 +373,23 @@ async function sac_update() {
             channel.innerText = ch +'채널';
 
             div_channel.appendChild(channel);
-            sac_list.forEach(sac => {
+            sac_list.forEach(async sac => {
                 const data = res[ch][sac];
                 const div_sac = document.createElement('div');
                 div_sac.setAttribute('class', 'sac');
                 div_sac.dataset.colorCode = data.color;
                 div_sac.dataset.channel = ch;
                 div_sac.dataset.sacName = sac;
+                
+                const hover_container = document.createElement('div');
+                hover_container.setAttribute('class', 'hover-container');
 
-                const sac_img = document.createElement('img');
+                const sac_img = document.createElement('canvas');
                 sac_img.setAttribute('class', 'sac-img');
+                sac_img.setAttribute('width', '48');
+                sac_img.setAttribute('height', '48');
                 sac_img.setAttribute('draggable', 'false');
-                sac_img.setAttribute('src', data.image);
-                div_sac.appendChild(sac_img);
+                hover_container.appendChild(sac_img);
 
                 const color_box = document.createElement('div');
                 color_box.setAttribute('class', 'color-box');
@@ -355,8 +407,9 @@ async function sac_update() {
 
                     color_box.appendChild(color_bar);
                 }
-                div_sac.appendChild(color_box);
+                hover_container.appendChild(color_box);
                 
+                div_sac.appendChild(hover_container);
                 div_channel.appendChild(div_sac);
             });
             new_sac_container.appendChild(div_channel);
@@ -364,7 +417,7 @@ async function sac_update() {
         sac_container.innerHTML = new_sac_container.innerHTML;
         const sacs = document.querySelectorAll('.sac');
         sacs.forEach(sac => {
-            sac.addEventListener('dblclick', () => {
+            sac.querySelector('.hover-container').addEventListener('dblclick', () => {
                 const target_code = sac.dataset.colorCode;
                 sacs.forEach(sac => {
                     sac.querySelector('.sac-img').style.visibility = 'visible';
@@ -378,7 +431,8 @@ async function sac_update() {
                     name.dataset.searched = '';
                 });
                 thumbnail_img.forEach(thimg => {
-                    thimg.setAttribute('src', thimg.dataset.grayScale);
+                    thimg.dataset.grayScale = true;
+                    thimg.getContext('2d').clearRect(0, 0, 48, 48);
                 });
                 thumbnail_channel.forEach(thch => {
                     thch.innerText = '';
@@ -399,7 +453,10 @@ async function sac_update() {
                         if (sac.dataset.colorCode == target_code) {
                             let i = sac_list.indexOf(sac.dataset.sacName);
                             sac_col[i].dataset.searched = "O";
-                            thumbnail_img[i].setAttribute('src', sac.querySelector('.sac-img').getAttribute('src'));
+                            if (thumbnail_img[i].dataset.grayScale == 'true') {
+                                thumbnail_img[i].dataset.grayScale = false;
+                                thumbnail_img[i].getContext('2d').drawImage(sac.querySelector('.sac-img'), 0, 0);
+                            }
 
                             if (thumbnail_channel[i].innerText != '') {
                                 thumbnail_channel[i].innerText += ',\u00a0';
@@ -420,7 +477,7 @@ async function sac_update() {
                     is_search = target_code;
                 }
             });
-            sac.addEventListener('mouseenter', (e) => {
+            sac.querySelector('.hover-container').addEventListener('mouseenter', () => {
                 const color_code = sac.dataset.colorCode.split(',');
                 for (i=0;i<3;i++) {
                     modal_color_sample[i+3].setAttribute('style', `background-color: #${color_code[i]};`);
@@ -431,7 +488,7 @@ async function sac_update() {
                     }
                 }
             });
-            sac.addEventListener('mousemove', e => {
+            sac.querySelector('.hover-container').addEventListener('mousemove', () => {
                 if (sac.querySelector('.sac-img').style.visibility == 'hidden') {
                     return;
                 }
@@ -441,17 +498,161 @@ async function sac_update() {
                     modal_color_box.style.visibility = 'visible';
                 }, 1000);
             });
-            sac.addEventListener('mouseleave', () => {
+            sac.querySelector('.hover-container').addEventListener('mouseleave', () => {
                 modal_color_box.style.visibility = 'hidden';
                 clearTimeout(modal_color_show);
             });
         });
+
         sac_container.classList.remove('loading');
 
         if (is_hexcode(search_code_hex[0].value) || is_hexcode(search_code_hex[1].value) || is_hexcode(search_code_hex[2].value)) {
             color_search(search_code_hex[0].value, search_code_hex[1].value, search_code_hex[2].value, search_error_hex.value);
         }
     });
+    const canvasCache = {};
+    document.querySelectorAll('.sac').forEach(sac => {
+        if (!(sac.dataset.sacName + sac.dataset.colorCode in canvasCache)) {
+            canvasCache[sac.dataset.sacName + sac.dataset.colorCode] = sac;
+        }
+    });
+
+    const promises = Object.entries(canvasCache).map(([key, sac]) => sac_draw(sac));
+    await Promise.all(promises);
+
+    document.querySelectorAll('.sac').forEach(sac => {
+        sac.querySelector('.sac-img').getContext('2d').drawImage(canvasCache[sac.dataset.sacName + sac.dataset.colorCode].querySelector('.sac-img'), 0, 0);
+    });
+}
+
+async function sac_draw(sac) {
+    const canv = sac.querySelector('.sac-img');
+    const color = sac.dataset.colorCode.split(',');
+    let imgs, base;
+    switch (sac.dataset.sacName) {
+        case '튼튼한 달걀 주머니':
+            imgs = await loadImages(['Egg_base', 'Egg_L', 'Egg1']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 감자 주머니':
+            imgs = await loadImages(['Potato_base', 'Potato_L', 'Potato1']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 옥수수 주머니':
+            imgs = await loadImages(['Corn_base', 'Corn_L', 'Corn1']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 밀 주머니':
+            imgs = await loadImages(['Wheat_base', 'Wheat_L', 'Wheat1']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 보리 주머니':
+            imgs = await loadImages(['Barley_base', 'Barley_L', 'Barley1']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 양털 주머니':
+            imgs = await loadImages(['Wool_base', 'Wool_L', 'Wool1', 'Wool2']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 거미줄 주머니':
+            imgs = await loadImages(['Cobweb_base', 'Cobweb_L', 'Cobweb1', 'Cobweb2', 'Cobweb3']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1], imgs[4], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 가는 실뭉치 주머니':
+            imgs = await loadImages(['Thin_base', 'Thin_L', 'Thin1', 'Thin2', 'Thin3']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1], imgs[4], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 굵은 실뭉치 주머니':
+            imgs = await loadImages(['Thick_base', 'Thick_L', 'Thick1', 'Thick2', 'Thick3']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1], imgs[4], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 저가형 가죽 주머니':
+            imgs = await loadImages(['Leather_base', 'Leather_L', 'Leather1', 'Leather2', 'Leather_1', 'Leather_1o', 'Leather_1i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 일반 가죽 주머니':
+            imgs = await loadImages(['Leather_base', 'Leather_L', 'Leather1', 'Leather2', 'Leather_2', 'Leather_2o', 'Leather_2i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 고급 가죽 주머니':
+            imgs = await loadImages(['Leather_base', 'Leather_L', 'Leather1', 'Leather2', 'Leather_3', 'Leather_3o', 'Leather_3i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 최고급 가죽 주머니':
+            imgs = await loadImages(['Leather_base', 'Leather_L', 'Leather1', 'Leather2', 'Leather_4', 'Leather_4o', 'Leather_4i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 저가형 옷감 주머니':
+            imgs = await loadImages(['Cloth_base', 'Cloth_L', 'Cloth1', 'Cloth2', 'Cloth_1', 'Cloth_1o', 'Cloth_1i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 일반 옷감 주머니':
+            imgs = await loadImages(['Cloth_base', 'Cloth_L', 'Cloth1', 'Cloth2', 'Cloth_2', 'Cloth_2o', 'Cloth_2i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 고급 옷감 주머니':
+            imgs = await loadImages(['Cloth_base', 'Cloth_L', 'Cloth1', 'Cloth2', 'Cloth_3', 'Cloth_3o', 'Cloth_3i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 최고급 옷감 주머니':
+            imgs = await loadImages(['Cloth_base', 'Cloth_L', 'Cloth1', 'Cloth2', 'Cloth_4', 'Cloth_4o', 'Cloth_4i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 저가형 실크 주머니':
+            imgs = await loadImages(['Silk_base', 'Silk_L', 'Silk1', 'Silk2', 'Silk_1', 'Silk_1o', 'Silk_1i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 일반 실크 주머니':
+            imgs = await loadImages(['Silk_base', 'Silk_L', 'Silk1', 'Silk2', 'Silk_2', 'Silk_2o', 'Silk_2i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 고급 실크 주머니':
+            imgs = await loadImages(['Silk_base', 'Silk_L', 'Silk1', 'Silk2', 'Silk_3', 'Silk_3o', 'Silk_3i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 최고급 실크 주머니':
+            imgs = await loadImages(['Silk_base', 'Silk_L', 'Silk1', 'Silk2', 'Silk_4', 'Silk_4o', 'Silk_4i']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1]);
+            base = await draw_add(canv, base, imgs[4], imgs[5], imgs[6], color[2]);
+            await draw_plus(canv, base);
+            break;
+        case '튼튼한 꽃바구니':
+            imgs = await loadImages(['Flower_base', 'Flower_L', 'Flower1', 'Flower2', 'Flower3']);
+            base = await draw(canv, imgs[0], imgs[1], imgs[2], color[0], imgs[3], color[1], imgs[4], color[2]);
+            await draw_plus(canv, base);
+            break;
+    }
 }
 
 function color_search(a, b, c, er = 0) {
@@ -518,6 +719,7 @@ function color_search(a, b, c, er = 0) {
     const result_boxes = document.querySelectorAll('.result-box');
     result_boxes.forEach(result_box => {
         result_box.addEventListener('dblclick', () => {
+            const target_code = result_box.dataset.colorCode;
             sacs.forEach(sac => {
                 sac.querySelector('.sac-img').style.visibility = 'visible';
                 sac.querySelector('.color-box').style.visibility = 'visible';
@@ -530,12 +732,12 @@ function color_search(a, b, c, er = 0) {
                 name.dataset.searched = '';
             });
             thumbnail_img.forEach(thimg => {
-                thimg.setAttribute('src', thimg.dataset.grayScale);
+                thimg.dataset.grayScale = true;
+                thimg.getContext('2d').clearRect(0, 0, 48, 48);
             });
             thumbnail_channel.forEach(thch => {
                 thch.innerText = '';
             });
-            const target_code = result_box.dataset.colorCode;
             if (is_search == target_code) {
                 is_search = false;
             } else {
@@ -552,7 +754,10 @@ function color_search(a, b, c, er = 0) {
                     if (sac.dataset.colorCode == target_code) {
                         let i = sac_list.indexOf(sac.dataset.sacName);
                         sac_col[i].dataset.searched = "O";
-                        thumbnail_img[i].setAttribute('src', sac.querySelector('.sac-img').getAttribute('src'));
+                        if (thumbnail_img[i].dataset.grayScale == 'true') {
+                            thumbnail_img[i].dataset.grayScale = false;
+                            thumbnail_img[i].getContext('2d').drawImage(sac.querySelector('.sac-img'), 0, 0);
+                        }
 
                         if (thumbnail_channel[i].innerText != '') {
                             thumbnail_channel[i].innerText += ',\u00a0';
@@ -631,6 +836,108 @@ function set_cookie(name, value, unixTime) {
 function get_cookie(name) {
     var value = document.cookie.match('(^|;) ?' + encodeURIComponent(name) + '=([^;]*)(;|$)');
     return value ? decodeURIComponent(value[2]) : null;
+}
+
+async function draw(canv, base, L, mask1, color1, mask2, color2, mask3, color3) {
+    const ctx = canv.getContext('2d');
+    const baseData = new ImageData(
+        new Uint8ClampedArray(base.data),
+        base.width, base.height
+    );
+    const c1 = hex2dec_color(color1);
+    const c2 = color2 !== undefined ? hex2dec_color(color2) : 'FFFFFF';
+    const c3 = color3 !== undefined ? hex2dec_color(color3) : 'FFFFFF';
+    const plus = imageCache['Plus'];
+
+    for (let i = 0; i < baseData.data.length; i += 4) {
+        if (mask1 !== undefined) {
+            const brightness = mask1.data[i];
+            if (brightness !== 0) {
+                baseData.data[i] = Math.max(0, baseData.data[i] + c1[0] - 255);
+                baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c1[1] - 255);
+                baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c1[2] - 255);
+            }
+        }
+        if (mask2 !== undefined) {
+            const brightness = mask2.data[i];
+            if (brightness !== 0) {
+                baseData.data[i] = Math.max(0, baseData.data[i] + c2[0] - 255);
+                baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c2[1] - 255);
+                baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c2[2] - 255);
+            }
+        }
+        if (mask3 !== undefined) {
+            const brightness = mask3.data[i];
+            if (brightness !== 0) {
+                baseData.data[i] = Math.max(0, baseData.data[i] + c3[0] - 255);
+                baseData.data[i +1] = Math.max(0, baseData.data[i +1] + c3[1] - 255);
+                baseData.data[i +2] = Math.max(0, baseData.data[i +2] + c3[2] - 255);
+            }
+        }
+        if (L !== undefined) {
+            baseData.data[i] = Math.min(baseData.data[i] + L.data[i], 255);
+            baseData.data[i + 1] = Math.min(baseData.data[i + 1] + L.data[i + 1], 255);
+            baseData.data[i + 2] = Math.min(baseData.data[i + 2] + L.data[i + 2], 255);
+        }
+    }
+    ctx.putImageData(baseData, 0, 0);
+    return baseData;
+}
+async function draw_add(canv, base, mask, l, s, color) {
+    const ctx = canv.getContext('2d');
+    const c = hex2dec_color(color);
+
+    for (let i=0; i<base.data.length;i+=4) {
+        const brightness = mask.data[i];
+        if (brightness !== 0) {
+            base.data[i] = Math.max(0, Math.min(c[0] + l.data[i], 255) - s.data[i]);
+            base.data[i+1] = Math.max(0, Math.min(c[1] + l.data[i+1], 255) - s.data[i+1]);
+            base.data[i+2] = Math.max(0, Math.min(c[2] + l.data[i+2], 255) - s.data[i+2]);
+        }
+    }
+    ctx.putImageData(base, 0, 0);
+    return base;
+}
+async function draw_plus(canv, base) {
+    const ctx = canv.getContext('2d');
+    const plus = imageCache['Plus'];
+    for (let i=0;i<base.data.length;i+=4) {
+        if (plus.data[i+3] !== 0) {
+            base.data[i] = plus.data[i];
+            base.data[i+1] = plus.data[i+1];
+            base.data[i+2] = plus.data[i+2];
+            base.data[i+3] = plus.data[i+3];
+        }
+    }
+    ctx.putImageData(base, 0, 0);
+    return base;
+}
+async function loadImages(urls) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", {willReadFrequently: true});
+
+    const promises = urls.map(async (url) => {
+        if (imageCache[url]) {
+            return imageCache[url];
+        }
+
+        const img = new Image();
+        img.src = '/static/layer/' + url + '.png';
+
+        await new Promise((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        });
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        imageCache[url] = imageData;
+        return imageData;
+    });
+
+    return Promise.all(promises);
 }
 
 function leftpad(str, len, pad) {
