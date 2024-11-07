@@ -67,31 +67,26 @@ def sec_routine():
 def min_routine():
     now = datetime.datetime.now()
     if (now.hour*60 +now.minute)%36 == 10:
-    # if True:
         scheduler.remove_job('min_routine')
         print(f'{now}: json updater start!')
-        asyncio.run(json_updater())
+        json_updater()
         scheduler.add_job(func=json_updater, trigger='interval', minutes=36, id='json_updater')
 
-async def json_updater():
-    print('json update start at', datetime.datetime.now())
-    tasks = []
-    for npc in npc_list:
-        for server in server_list:
-            for ch in range(1, channel_list[server] +1):
-                if ch == 11:
-                    continue
-                tasks.append(json_update(npc, server, ch))
-    await asyncio.gather(*tasks)
-    with open(shopfilepath, 'w', encoding='UTF8') as f:
-        json.dump(shop_data, f, ensure_ascii=False, indent='\t')
-    print('json update end at', datetime.datetime.now())
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
-print(f'{datetime.datetime.now()}: second check start!')
-scheduler.start()
-
+def json_updater():
+    async def async_container():
+        print('json update start at', datetime.datetime.now())
+        tasks = []
+        for npc in npc_list:
+            for server in server_list:
+                for ch in range(1, channel_list[server] +1):
+                    if ch == 11:
+                        continue
+                    tasks.append(json_update(npc, server, ch))
+        await asyncio.gather(*tasks)
+        with open(shopfilepath, 'w', encoding='UTF8') as f:
+            json.dump(shop_data, f, ensure_ascii=False, indent='\t')
+        print('json update end at', datetime.datetime.now())
+    asyncio.run(async_container())
 
 async def json_update(npc, server, ch):
     shop_list_i = get_shop_list(npc, server, ch)
@@ -99,6 +94,11 @@ async def json_update(npc, server, ch):
         shop_data[npc][server][str(ch)] = shop_list_i['shop'][sac_data(shop_list_i)]
         shop_data[npc][server][str(ch)]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
         shop_data[npc][server]['date_shop_next_update'] = shop_list_i['date_shop_next_update']
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=sec_routine, trigger='interval', seconds=1, id='sec_routine')
+print(f'{datetime.datetime.now()}: second check start!')
+scheduler.start()
 
 load_dotenv()
 headers = {
@@ -162,5 +162,5 @@ def test(npc_name, server_name):
 #     return 'date_shop_next_update'
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080, debug=True)
-    # app.run(host='localhost', port=8080)
+    # app.run(host='localhost', port=8080, debug=True)
+    app.run(host='localhost', port=8080)
